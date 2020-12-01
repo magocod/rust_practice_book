@@ -4,3 +4,5 @@
 # others
 *.pdb
 *.exe
+
+target/
