@@ -1,4 +1,5 @@
 mod cli;
+mod tasks;
 use structopt::StructOpt;
 
 fn main() {
