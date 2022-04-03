@@ -10,16 +10,18 @@ fn main() -> Result<(), TransactionError> {
     }
 
     // fail
-    let t = section_1::transaction::get_first_transaction_for("test_data/transactions.json", "Matt");
+    let t =
+        section_1::transaction::get_first_transaction_for("test_data/transactions.json", "Matt");
     match t {
         Ok(v) => println!("Found transaction: {:?}", v),
         Err(e) => {
-            match e {
-                TransactionError::LoadError(e) => { println!("LoadError: {:?}", e) }
-                TransactionError::ParseError(e) => { println!("ParseError: {:?}", e) }
-                TransactionError::Message(e) => { println!("Message: {:?}", e) }
-            }
-        },
+            println!("Error: {:?}", e)
+            // match e {
+            //     TransactionError::LoadError(e) => { println!("LoadError: {:?}", e) }
+            //     TransactionError::ParseError(e) => { println!("ParseError: {:?}", e) }
+            //     TransactionError::Message(e) => { println!("Message: {:?}", e) }
+            // }
+        }
     }
 
     Ok(())
