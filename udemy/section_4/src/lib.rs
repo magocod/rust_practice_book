@@ -1,4 +1,5 @@
 mod card;
+mod svg_mac;
 
 use std::fmt::Display;
 

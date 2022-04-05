@@ -1,12 +1,14 @@
 // use d4_builder_derive::*;
 use std::collections::BTreeMap;
 
+#[allow(dead_code)]
 #[derive(Debug, PartialEq)]
 pub enum Ability {
     Charge,
     Taunt,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Clone, Copy)]
 pub enum Trigger {
     BattleCry,
@@ -15,6 +17,7 @@ pub enum Trigger {
     Damage,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, PartialEq)]
 pub struct Card {
     pub name: String,
