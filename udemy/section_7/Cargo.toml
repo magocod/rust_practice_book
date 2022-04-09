@@ -1,0 +1,22 @@
+[package]
+name = "section_7"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = "0.4.2"
+#failure = "0.1.5"
+#failure_derive = "0.1.5"
+anyhow="1.0.30"
+thiserror="1.0.17"
+d6_doodle = {path="../section_6/"}
+diesel = {version = "1.4.2", features = ["postgres"]}
+rand = "0.7.0"
+maud = {version = "0.21.0", features = ["rocket"]}
+
+[dependencies.rocket_contrib]
+version="0.4.2"
+default-features = false
+features = ["diesel_postgres_pool"]
