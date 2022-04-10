@@ -1,11 +1,12 @@
 [package]
-name = "section_8"
+name = "section_8_1"
 version = "0.1.0"
 edition = "2021"
+
+[lib]
+name = "double"
+crate-type= ["dylib"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
-[build-dependencies]
-cmake = "0.1.31"
