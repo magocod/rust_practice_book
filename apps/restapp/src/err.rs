@@ -2,6 +2,7 @@ use actix_web::{
     error, get,
     http::{header, StatusCode},
     HttpResponse,
+    Result
 };
 use std::fmt::{Display, Formatter};
 
@@ -83,5 +84,12 @@ pub async fn custom_error() -> Result<&'static str, MyError> {
 
 #[get("/custom_error_json")]
 pub async fn custom_error_json() -> Result<&'static str, ErrorData> {
-    Err(ErrorData { message: String::from("..."), error: String::from("bad") })
+    Err(ErrorData { message: String::from("..."), error: String::from("error details") })
+}
+
+#[get("/error_with_helper")]
+pub async fn error_with_helper() -> Result<&'static str> {
+    let result: Result<&'static str, ErrorData> = Err(ErrorData { message: String::from("test error"), error: String::from("test error") });
+
+    Ok(result.map_err(|e| error::ErrorBadRequest(e.message))?)
 }
