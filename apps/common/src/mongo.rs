@@ -13,10 +13,22 @@ use fake::Fake;
 
 pub const DB_NAME: &str = "actix";
 
+pub const COLL_BOOKS: &str = "books";
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Book {
-    title: String,
-    author: String,
+    pub title: String,
+    pub author: String,
+}
+
+impl Book {
+    /// generate random book
+    pub fn factory() -> Self {
+        Self {
+            title: Sentences(EN, 1..3).fake::<Vec<String>>().join(" "),
+            author: FirstName(EN).fake::<String>() + " " + LastName(EN).fake(),
+        }
+    }
 }
 
 pub async fn connect() -> Result<Client, Box<dyn Error>> {

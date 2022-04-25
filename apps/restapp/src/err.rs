@@ -15,6 +15,15 @@ pub struct ErrorData {
     // code: MyError,
 }
 
+impl ErrorData {
+    pub fn new(message: String, error: String) -> Self {
+        Self {
+            message,
+            error
+        }
+    }
+}
+
 impl Display for ErrorData {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         // Use `self.number` to refer to each positional data point.

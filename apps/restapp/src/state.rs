@@ -1,9 +1,26 @@
 use actix_web::{web, Responder, Result};
+use common::mongo::connect;
+use mongodb::Client;
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 
+pub struct CounterState {
+    pub counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
+}
+
 pub struct AppState {
     pub counter: Mutex<i32>, // <- Mutex is necessary to mutate safely across threads
+    pub mongodb_client: Client,
+}
+
+impl AppState {
+    pub async fn new() -> Self {
+        let mongodb_client = connect().await.expect("failed to connect mongodb");
+        Self {
+            counter: Mutex::new(0),
+            mongodb_client,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -23,7 +40,7 @@ impl Counter {
     }
 }
 
-pub async fn update_counter(data: web::Data<AppState>) -> String {
+pub async fn update_counter(data: web::Data<CounterState>) -> String {
     let mut counter = data.counter.lock().unwrap(); // <- get counter's MutexGuard
     *counter += 1; // <- access counter inside MutexGuard
 
@@ -31,7 +48,7 @@ pub async fn update_counter(data: web::Data<AppState>) -> String {
 }
 
 pub async fn json_update_counter(
-    data: web::Data<AppState>,
+    data: web::Data<CounterState>,
     counter_form: web::Json<CounterForm>,
 ) -> Result<impl Responder> {
     println!("{:?}", counter_form);
@@ -53,7 +70,7 @@ mod tests {
 
     #[actix_web::test]
     async fn increment_the_counter_by_one_unit() {
-        let app_state = web::Data::new(AppState {
+        let app_state = web::Data::new(CounterState {
             counter: Mutex::new(0),
         });
 
@@ -73,7 +90,7 @@ mod tests {
 
     #[actix_web::test]
     async fn increment_the_counter_by_quantity() {
-        let app_state = web::Data::new(AppState {
+        let app_state = web::Data::new(CounterState {
             counter: Mutex::new(1),
         });
 
@@ -96,7 +113,7 @@ mod tests {
 
     #[actix_web::test]
     async fn error_counter_increment_not_received() {
-        let app_state = web::Data::new(AppState {
+        let app_state = web::Data::new(CounterState {
             counter: Mutex::new(1),
         });
 

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod err;
 pub mod state;
+pub mod mongo_crud;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct MyObj {
