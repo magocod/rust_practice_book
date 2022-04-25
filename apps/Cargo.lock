@@ -1295,6 +1295,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "common",
+ "futures",
  "mongodb",
  "serde",
  "serde_json",
