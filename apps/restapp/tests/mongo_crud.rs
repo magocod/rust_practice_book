@@ -112,35 +112,113 @@ async fn remove_one_book_for_full_match() {
     assert_eq!(resp.status(), http::StatusCode::OK);
 }
 
-#[actix_web::test]
-async fn list_unfiltered_books() {
-    let app_state = web::Data::new(AppState::new().await);
+#[cfg(test)]
+mod list_books_by_query_string {
+    use super::*;
 
-    let book_data = BookDoc::factory();
+    #[actix_web::test]
+    async fn unfiltered() {
+        let app_state = web::Data::new(AppState::new().await);
 
-    let _ = app_state
-        .mongodb_client
-        .database(DB_NAME)
-        .collection::<BookDoc>(COLL_BOOKS)
-        .insert_one(&book_data, None)
-        .await
-        .expect("failed create test book");
+        let book_data = BookDoc::factory();
 
-    let scope = web::scope("/books").route("/list_books", web::get().to(list_books));
+        let _ = app_state
+            .mongodb_client
+            .database(DB_NAME)
+            .collection::<BookDoc>(COLL_BOOKS)
+            .insert_one(&book_data, None)
+            .await
+            .expect("failed create test book");
 
-    let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
-    let req = test::TestRequest::get()
-        .uri("/books/list_books")
-        .to_request();
+        let scope = web::scope("/books").route("/list_books", web::get().to(list_books));
 
-    // let resp = test::call_service(&app, req).await;
-    //
-    // println!("{}, {:?}", resp.status(), resp.response().body());
-    // assert_eq!(resp.status(), http::StatusCode::OK);
+        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
+        let req = test::TestRequest::get()
+            .uri("/books/list_books")
+            .to_request();
 
-    let resp: Vec<Book> = test::call_and_read_body_json(&app, req).await;
-    println!("{:?}", resp);
+        // let resp = test::call_service(&app, req).await;
+        //
+        // println!("{}, {:?}", resp.status(), resp.response().body());
+        // assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let resp: Vec<BookDoc> = test::call_and_read_body_json(&app, req).await;
+        println!("{:?}", resp);
+
+        assert_eq!(2 + 1, 3);
+    }
+
+    #[actix_web::test]
+    async fn limit_number_of_documents() {
+        let param = 3;
+
+        let app_state = web::Data::new(AppState::new().await);
+
+        let book_data = BookDoc::factory();
+
+        let _ = app_state
+            .mongodb_client
+            .database(DB_NAME)
+            .collection::<BookDoc>(COLL_BOOKS)
+            .insert_one(&book_data, None)
+            .await
+            .expect("failed create test book");
+
+        let scope = web::scope("/books").route("/list_books", web::get().to(list_books));
+
+        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
+        let req = test::TestRequest::get()
+            .uri(format!("/books/list_books?limit={}", param).as_str())
+            .to_request();
+
+        // let resp = test::call_service(&app, req).await;
+        //
+        // println!("{}, {:?}", resp.status(), resp.response().body());
+        // assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let resp: Vec<BookDoc> = test::call_and_read_body_json(&app, req).await;
+        println!("{:?}", resp);
+
+        assert_eq!(2 + 1, 3);
+    }
+
+    #[actix_web::test]
+    async fn filter_by_author() {
+        let app_state = web::Data::new(AppState::new().await);
+
+        let book_data = BookDoc::factory();
+
+        let param = &book_data.author.split(" ").next().unwrap();
+
+        // println!("{}", format!("/books/list_books?limit=4&author={}", &book_data.author));
+
+        let _ = app_state
+            .mongodb_client
+            .database(DB_NAME)
+            .collection::<BookDoc>(COLL_BOOKS)
+            .insert_one(&book_data, None)
+            .await
+            .expect("failed create test book");
+
+        let scope = web::scope("/books").route("/list_books", web::get().to(list_books));
+
+        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
+        let req = test::TestRequest::get()
+            .uri(format!("/books/list_books?limit=4&author={}", param).as_str())
+            .to_request();
+
+        // let resp = test::call_service(&app, req).await;
+        //
+        // println!("{}, {:?}", resp.status(), resp.response().body());
+        // assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let resp: Vec<BookDoc> = test::call_and_read_body_json(&app, req).await;
+        println!("{:?}", resp);
+
+        assert_eq!(2 + 1, 3);
+    }
 }
+
 
 
 

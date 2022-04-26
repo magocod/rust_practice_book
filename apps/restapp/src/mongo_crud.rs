@@ -2,6 +2,7 @@ use actix_web::{web, HttpResponse, Responder};
 use common::mongo::{Book, BookDoc, COLL_BOOKS, DB_NAME};
 use mongodb::bson::doc;
 use futures::TryStreamExt;
+use mongodb::options::FindOptions;
 // use mongodb::bson::oid::ObjectId;
 
 use serde::{Deserialize};
@@ -11,7 +12,8 @@ use crate::state::AppState;
 
 #[derive(Debug, Deserialize)]
 pub struct BookListQuery {
-    limit: usize,
+    author: Option<String>,
+    limit: Option<u32>,
 }
 
 pub async fn create_book(data: web::Data<AppState>, book_form: web::Json<Book>) -> impl Responder {
@@ -106,23 +108,48 @@ pub async fn delete_book(data: web::Data<AppState>, _id: web::Path<String>) -> i
 }
 
 pub async fn list_books(data: web::Data<AppState>, qs: web::Query<BookListQuery>) -> impl Responder {
-    println!("{:?}", qs);
+    // println!("{:?}", qs);
 
     let collection = data
         .mongodb_client
         .database(DB_NAME)
         .collection::<BookDoc>(COLL_BOOKS);
-    // let d = doc! {
-    //     "author": &book_form.author
-    // };
-    let rs = collection.find(None, None).await;
+
+    let mut d = doc! {};
+
+    match &qs.author {
+        None => {
+            // pass
+        }
+        Some(v) => {
+            d.insert("author", doc! {
+                "$regex": v,
+                "$options": "i"
+            });
+        }
+    }
+
+    let mut op = FindOptions::default();
+
+    match &qs.limit {
+        None => {
+            op.limit = Some(5);
+        }
+        Some(v) => {
+            op.limit = Some(*v as i64);
+        }
+    }
+
+    // println!("{:?}", d);
+
+    let rs = collection.find(d, op).await;
 
     match rs {
         Ok(mut cursor) => {
             let mut v: Vec<BookDoc> = vec![];
             // Iterate over the results of the cursor.
             while let Some(book) = cursor.try_next().await.unwrap() {
-                // println!("book: {:?}", book);
+                // println!("book: {:?}", book);}
                 v.push(book);
             }
             HttpResponse::Ok().json(v)
