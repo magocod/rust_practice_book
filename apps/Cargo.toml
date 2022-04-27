@@ -1,7 +1,8 @@
 [workspace]
-
 members = [
     "command",
     "common",
     "restapp",
+    "entity",
+    "migration"
 ]
