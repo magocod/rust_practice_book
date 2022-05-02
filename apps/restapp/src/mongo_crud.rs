@@ -1,7 +1,9 @@
+use std::str::FromStr;
 use actix_web::{web, HttpResponse, Responder};
 use common::mongo::{Book, BookDoc, COLL_BOOKS, DB_NAME};
-use mongodb::bson::doc;
+use mongodb::bson::{doc, oid::ObjectId};
 use futures::TryStreamExt;
+// use mongodb::bson::oid::Error;
 use mongodb::options::FindOptions;
 // use mongodb::bson::oid::ObjectId;
 
@@ -96,9 +98,20 @@ pub async fn delete_book(data: web::Data<AppState>, _id: web::Path<String>) -> i
     let t = _id;
     println!("{:?}", t);
 
-    let d = doc! {
-        "_id": "6266b86a456ad7764b8d18bd"
+    let oid = match ObjectId::from_str(t.into_inner().as_str()) {
+        Ok(v) => {
+            v
+        }
+        Err(e) => {
+            return HttpResponse::BadRequest().json(ErrorData::new("...".to_string(), e.to_string()));
+        }
     };
+
+    let d = doc! {
+        "_id": oid
+    };
+    println!("{:?}", d);
+
     let rs = collection.delete_one(d, None).await;
 
     match rs {

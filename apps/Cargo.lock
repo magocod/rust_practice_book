@@ -2023,6 +2023,7 @@ dependencies = [
  "actix-web",
  "common",
  "dotenv",
+ "entity",
  "futures",
  "mongodb",
  "serde",

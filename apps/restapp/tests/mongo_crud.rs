@@ -79,7 +79,7 @@ async fn update_one_book() {
 }
 
 #[actix_web::test]
-async fn remove_one_book_for_full_match() {
+async fn remove_one_book_for_id() {
     let app_state = web::Data::new(AppState::new().await);
 
     let book_data = Book::factory();
