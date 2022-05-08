@@ -1,16 +1,27 @@
-use actix_web::{http, test, web, App};
+use actix_web::{http, test, web, App, Scope};
 
 use common::mongo::{Book, BookDoc, COLL_BOOKS, DB_NAME};
 use restapp::mongo_crud::{create_book, delete_book, get_book, list_books, update_book};
 use restapp::state::AppState;
 
-#[actix_web::test]
-async fn create_book_successfully() {
+async fn test_app() -> (Scope, web::Data<AppState>) {
     let app_state = web::Data::new(AppState::new().await);
 
-    let scope = web::scope("/books").route("/create_book", web::post().to(create_book));
+    let scope = web::scope("/books")
+        .route("/create_book", web::post().to(create_book))
+        .route("/get_book", web::get().to(get_book))
+        .route("/update_book/{_id}", web::put().to(update_book))
+        .route("/delete_book/{_id}", web::delete().to(delete_book))
+        .route("/list_books", web::get().to(list_books));
 
+    (scope, app_state)
+}
+
+#[actix_web::test]
+async fn create_book_successfully() {
+    let (scope, app_state) = test_app().await;
     let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
+
     let req = test::TestRequest::post()
         .uri("/books/create_book")
         .set_json(Book::factory())
@@ -24,7 +35,8 @@ async fn create_book_successfully() {
 
 #[actix_web::test]
 async fn get_one_book() {
-    let app_state = web::Data::new(AppState::new().await);
+    let (scope, app_state) = test_app().await;
+    let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
 
     let book_data = Book::factory();
 
@@ -36,9 +48,6 @@ async fn get_one_book() {
         .await
         .expect("failed create test book");
 
-    let scope = web::scope("/books").route("/get_book", web::get().to(get_book));
-
-    let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
     let req = test::TestRequest::get()
         .uri("/books/get_book")
         .set_json(&book_data)
@@ -52,11 +61,13 @@ async fn get_one_book() {
 
 #[actix_web::test]
 async fn update_one_book() {
-    let app_state = web::Data::new(AppState::new().await);
+    let (scope, app_state) = test_app().await;
+    let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
 
     let book_data = Book::factory();
+    let update_data = Book::factory();
 
-    let _ = app_state
+    let ior = app_state
         .mongodb_client
         .database(DB_NAME)
         .collection::<Book>(COLL_BOOKS)
@@ -64,12 +75,15 @@ async fn update_one_book() {
         .await
         .expect("failed create test book");
 
-    let scope = web::scope("/books").route("/get_book", web::put().to(update_book));
-
-    let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
     let req = test::TestRequest::put()
-        .uri("/books/get_book")
-        .set_json(&book_data)
+        .uri(
+            format!(
+                "/books/update_book/{}",
+                ior.inserted_id.as_object_id().unwrap()
+            )
+            .as_str(),
+        )
+        .set_json(&update_data)
         .to_request();
 
     let resp = test::call_service(&app, req).await;
@@ -80,7 +94,8 @@ async fn update_one_book() {
 
 #[actix_web::test]
 async fn remove_one_book_for_id() {
-    let app_state = web::Data::new(AppState::new().await);
+    let (scope, app_state) = test_app().await;
+    let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
 
     let book_data = Book::factory();
 
@@ -92,9 +107,6 @@ async fn remove_one_book_for_id() {
         .await
         .expect("failed create test book");
 
-    let scope = web::scope("/books").route("/delete_book/{_id}", web::delete().to(delete_book));
-
-    let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
     let req = test::TestRequest::delete()
         .uri(
             format!(
@@ -118,7 +130,8 @@ mod list_books_by_query_string {
 
     #[actix_web::test]
     async fn unfiltered() {
-        let app_state = web::Data::new(AppState::new().await);
+        let (scope, app_state) = test_app().await;
+        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
 
         let book_data = BookDoc::factory();
 
@@ -130,9 +143,6 @@ mod list_books_by_query_string {
             .await
             .expect("failed create test book");
 
-        let scope = web::scope("/books").route("/list_books", web::get().to(list_books));
-
-        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
         let req = test::TestRequest::get()
             .uri("/books/list_books")
             .to_request();
@@ -150,10 +160,10 @@ mod list_books_by_query_string {
 
     #[actix_web::test]
     async fn limit_number_of_documents() {
+        let (scope, app_state) = test_app().await;
+        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
+
         let param = 3;
-
-        let app_state = web::Data::new(AppState::new().await);
-
         let book_data = BookDoc::factory();
 
         let _ = app_state
@@ -164,9 +174,6 @@ mod list_books_by_query_string {
             .await
             .expect("failed create test book");
 
-        let scope = web::scope("/books").route("/list_books", web::get().to(list_books));
-
-        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
         let req = test::TestRequest::get()
             .uri(format!("/books/list_books?limit={}", param).as_str())
             .to_request();
@@ -184,7 +191,8 @@ mod list_books_by_query_string {
 
     #[actix_web::test]
     async fn filter_by_author() {
-        let app_state = web::Data::new(AppState::new().await);
+        let (scope, app_state) = test_app().await;
+        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
 
         let book_data = BookDoc::factory();
 
@@ -200,9 +208,6 @@ mod list_books_by_query_string {
             .await
             .expect("failed create test book");
 
-        let scope = web::scope("/books").route("/list_books", web::get().to(list_books));
-
-        let app = test::init_service(App::new().app_data(app_state.clone()).service(scope)).await;
         let req = test::TestRequest::get()
             .uri(format!("/books/list_books?limit=4&author={}", param).as_str())
             .to_request();
@@ -218,19 +223,3 @@ mod list_books_by_query_string {
         assert_eq!(2 + 1, 3);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

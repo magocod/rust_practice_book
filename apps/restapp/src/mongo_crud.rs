@@ -62,21 +62,29 @@ pub async fn get_book(data: web::Data<AppState>, book_form: web::Json<Book>) -> 
     }
 }
 
-pub async fn update_book(data: web::Data<AppState>, book_form: web::Json<Book>) -> impl Responder {
+pub async fn update_book(data: web::Data<AppState>, book_form: web::Json<Book>, _id: web::Path<String>) -> impl Responder {
     let collection = data
         .mongodb_client
         .database(DB_NAME)
         .collection::<Book>(COLL_BOOKS);
 
+    let oid = match ObjectId::from_str(_id.into_inner().as_str()) {
+        Ok(v) => {
+            v
+        }
+        Err(e) => {
+            return HttpResponse::BadRequest().json(ErrorData::new("...".to_string(), e.to_string()));
+        }
+    };
+
     let query = doc! {
-        "title": book_form.title.to_string(),
-        "author": book_form.author.to_string(),
+        "_id": oid
     };
 
     let update = doc! {
         "$set": {
-            "title": "....",
-            "author": "updated",
+            "title": book_form.title.to_string(),
+            "author": book_form.author.to_string(),
         }
     };
 
