@@ -2,8 +2,9 @@ use actix_web::{get, post, web, HttpResponse, Responder, Result};
 use serde::{Deserialize, Serialize};
 
 pub mod err;
-pub mod state;
+pub mod errors;
 pub mod mongo_crud;
+pub mod state;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct MyObj {
@@ -48,16 +49,12 @@ mod tests {
 
         println!("{}, {:?}", resp.status(), resp.response().body());
         assert!(resp.status().is_success());
-
-
     }
 
     #[actix_web::test]
     async fn return_json_content() {
         let app = test::init_service(App::new().service(hello_json)).await;
-        let req = test::TestRequest::get()
-            .uri("/hello_json")
-            .to_request();
+        let req = test::TestRequest::get().uri("/hello_json").to_request();
 
         let resp = test::call_service(&app, req).await;
 
