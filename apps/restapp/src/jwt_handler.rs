@@ -1,13 +1,15 @@
 use actix_web::{http::header, web, HttpRequest, HttpResponse};
 use commons::jwt::decode_token;
-use commons::mongo::{User, COLL_USERS, DB_NAME};
+use commons::mongo::{Token, User, COLL_TOKENS, COLL_USERS, DB_NAME};
 use serde::{Deserialize, Serialize};
+// use std::str::FromStr;
 
 use crate::errors::ServiceError;
 use crate::state::AppState;
 
 use argon2::{self, Config};
 use mongodb::bson::doc;
+// use mongodb::bson::oid::ObjectId;
 
 lazy_static::lazy_static! {
     pub static ref SECRET_KEY: String = "secret".to_string();
@@ -90,8 +92,48 @@ pub async fn login(
     }
 }
 
-pub async fn logout() -> HttpResponse {
-    HttpResponse::Ok().finish()
+pub async fn logout(
+    request: HttpRequest,
+    data: web::Data<AppState>,
+) -> Result<HttpResponse, ServiceError> {
+    let h = request.headers().get(header::AUTHORIZATION);
+    let hv = h.ok_or(ServiceError::BadRequest("error check token header".into()))?;
+
+    let tk = hv.to_str()?.to_string();
+    let mut split = tk.split(" ").collect::<Vec<_>>();
+    if split.len() != 2 {
+        return Err(ServiceError::BadRequest(
+            "error incomplete token header".into(),
+        ));
+    }
+    let s = split
+        .pop()
+        .ok_or(ServiceError::BadRequest("error invalid auth header".into()))?;
+
+    let collection = data
+        .mongodb_client
+        .database(DB_NAME)
+        .collection::<Token>(COLL_TOKENS);
+    let d = doc! {
+        "token": &s
+    };
+    let found = collection
+        .find_one(d, None)
+        .await?
+        .ok_or(ServiceError::NotFound("token not found".into()))?;
+
+    // validate
+    let _ = decode_token(&s.to_string())?;
+
+    // let oid = ObjectId::from_str(s)?;
+
+    let d = doc! {
+        "_id": found.id.ok_or(ServiceError::BadRequest("error get token _id".into()))?
+    };
+
+    let rs = collection.delete_one(d, None).await?;
+
+    Ok(HttpResponse::Ok().json(rs))
 }
 
 pub async fn get_me(request: HttpRequest) -> Result<HttpResponse, ServiceError> {

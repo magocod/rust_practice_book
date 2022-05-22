@@ -83,6 +83,17 @@ impl User {
             .insert_one(self, None)
             .await
     }
+
+    // pub async fn build(&mut self, client: &Client) -> mongodb::error::Result<InsertOneResult> {
+    //     let ir = client
+    //         .database(DB_NAME)
+    //         .collection::<User>(COLL_USERS)
+    //         .insert_one(&*self, None)
+    //         .await?;
+    //
+    //     self.id = ir.inserted_id.as_object_id();
+    //     Ok(ir)
+    // }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

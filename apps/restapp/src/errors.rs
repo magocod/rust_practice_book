@@ -7,6 +7,8 @@ use std::convert::From;
 
 use mongodb;
 
+use mongodb::bson::oid::Error as OidError;
+
 #[derive(Debug, Display)]
 pub enum ServiceError {
     #[display(fmt = "Internal Server Error")]
@@ -109,3 +111,34 @@ impl From<mongodb::error::ErrorKind> for ServiceError {
         ServiceError::BadRequest("mongodb ErrorKind".into())
     }
 }
+
+impl From<OidError> for ServiceError {
+    fn from(v: OidError) -> ServiceError {
+        match v {
+            OidError::InvalidHexStringCharacter { .. } => {
+                ServiceError::BadRequest("mongodb oid Error::InvalidHexStringCharacter".into())
+            }
+            OidError::InvalidHexStringLength { .. } => {
+                ServiceError::BadRequest("mongodb oid Error::InvalidHexStringLength".into())
+            }
+            _ => ServiceError::BadRequest("mongodb generic oid Error::InvalidHexStringLength".into()),
+        }
+    }
+}
+
+// impl ResponseError trait allows to convert our errors into http responses with appropriate data
+// impl ResponseError for mongodb::bson::oid::Error {
+//     fn error_response(&self) -> HttpResponse {
+//         match self {
+//             Error::InvalidHexStringCharacter { .. } => {
+//                 HttpResponse::BadRequest().json("mongodb::bson::oid::Error".into())
+//             }
+//             Error::InvalidHexStringLength { .. } => {
+//                 HttpResponse::BadRequest().json("mongodb::bson::oid::Error".into())
+//             }
+//             _ => {
+//                 HttpResponse::BadRequest().json("mongodb::bson::oid::Error general".into())
+//             }
+//         }
+//     }
+// }
