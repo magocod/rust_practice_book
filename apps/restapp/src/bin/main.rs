@@ -3,6 +3,8 @@ use std::sync::Mutex;
 
 use commons::mongo::connect;
 
+use restapp::jwt_handler;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let mongodb_client = connect().await.expect("failed to connect mongodb");
@@ -14,13 +16,12 @@ async fn main() -> std::io::Result<()> {
     });
 
     HttpServer::new(move || {
-        let scope = web::scope("/books").route(
-            "/create_book",
-            web::post().to(restapp::mongo_crud::create_book),
-        ).route(
-            "/get_book",
-            web::get().to(restapp::mongo_crud::get_book),
-        );
+        let scope = web::scope("/books")
+            .route(
+                "/create_book",
+                web::post().to(restapp::mongo_crud::create_book),
+            )
+            .route("/get_book", web::get().to(restapp::mongo_crud::get_book));
 
         App::new()
             .app_data(app_state.clone()) // <- register the created data
@@ -31,6 +32,14 @@ async fn main() -> std::io::Result<()> {
             .service(restapp::err::custom_error)
             .service(restapp::err::custom_error_json)
             .service(restapp::err::error_with_helper)
+            .service(
+                web::scope("/api").service(
+                    web::resource("/jwt")
+                        .route(web::post().to(jwt_handler::login))
+                        // .route(web::delete().to(jwt_handler::logout))
+                        .route(web::get().to(jwt_handler::get_me)),
+                ),
+            )
             .route("/hey/{name}", web::get().to(restapp::manual_path))
             .route(
                 "/update_counter",
