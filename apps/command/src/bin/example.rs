@@ -1,6 +1,6 @@
-use common;
+use commons;
 
 fn main() {
     println!("call common");
-    println!("add_one {}", common::add_one(1));
+    println!("add_one {}", commons::add_one(1));
 }

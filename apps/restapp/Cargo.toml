@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-common = { path = "../common" }
+commons = { path = "../commons" }
 entity = { path = "../entity" }
 actix-web = "4"
 serde = { version = "1.0", features = ["derive"] }
@@ -16,4 +16,7 @@ mongodb = "2.1.0"
 futures = "0.3.21"
 dotenv = "0.15"
 derive_more = "0.99.5"
-lettre = { version = "0.10.0-rc.6",  feature = ["full"] }
+lettre = { version = "0.10.0-rc.6" }
+jsonwebtoken = "8"
+rust-argon2 = "1"
+lazy_static = "1.4"

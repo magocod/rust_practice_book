@@ -5,7 +5,7 @@ use std::env;
 
 use lettre::transport::smtp::authentication::{Credentials, Mechanism};
 use lettre::{Message, SmtpTransport, Transport};
-use lettre::message::header;
+// use lettre::message::header;
 use lettre::transport::smtp::client::Tls;
 
 fn main() {

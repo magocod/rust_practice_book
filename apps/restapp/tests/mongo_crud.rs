@@ -1,6 +1,6 @@
 use actix_web::{http, test, web, App, Scope};
 
-use common::mongo::{Book, BookDoc, COLL_BOOKS, DB_NAME};
+use commons::mongo::{Book, BookDoc, COLL_BOOKS, DB_NAME};
 use restapp::mongo_crud::{create_book, delete_book, get_book, list_books, update_book};
 use restapp::state::AppState;
 

@@ -5,6 +5,7 @@ pub mod err;
 pub mod errors;
 pub mod mongo_crud;
 pub mod state;
+pub mod jwt_handler;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct MyObj {

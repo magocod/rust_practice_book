@@ -1,3 +1,4 @@
+pub mod jwt;
 pub mod mongo;
 
 pub fn add_one(x: i32) -> i32 {

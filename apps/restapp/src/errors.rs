@@ -1,6 +1,9 @@
+use actix_web::http::header::ToStrError;
 use actix_web::{error::ResponseError, HttpResponse};
 use derive_more::Display;
-// use std::convert::From;
+use std::convert::From;
+use jsonwebtoken::errors as tk_errors;
+use jsonwebtoken::errors::ErrorKind;
 
 #[derive(Debug, Display)]
 pub enum ServiceError {
@@ -32,3 +35,39 @@ impl ResponseError for ServiceError {
 //         ServiceError::BadRequest("error".into())
 //     }
 // }
+
+impl From<ToStrError> for ServiceError {
+    fn from(_: ToStrError) -> ServiceError {
+        ServiceError::BadRequest("error ToStrError".into())
+    }
+}
+
+impl From<tk_errors::Error> for ServiceError {
+    fn from(v: tk_errors::Error) -> ServiceError {
+        // println!("e: {:?}", v);
+        match v.kind() {
+            ErrorKind::InvalidToken => {
+                ServiceError::BadRequest("invalid tk error".into())
+            }
+            _ => { ServiceError::BadRequest("tk general error".into()) }
+            // ErrorKind::InvalidSignature => {}
+            // ErrorKind::InvalidEcdsaKey => {}
+            // ErrorKind::InvalidRsaKey(_) => {}
+            // ErrorKind::RsaFailedSigning => {}
+            // ErrorKind::InvalidAlgorithmName => {}
+            // ErrorKind::InvalidKeyFormat => {}
+            // ErrorKind::MissingRequiredClaim(_) => {}
+            // ErrorKind::ExpiredSignature => {}
+            // ErrorKind::InvalidIssuer => {}
+            // ErrorKind::InvalidAudience => {}
+            // ErrorKind::InvalidSubject => {}
+            // ErrorKind::ImmatureSignature => {}
+            // ErrorKind::InvalidAlgorithm => {}
+            // ErrorKind::MissingAlgorithm => {}
+            // ErrorKind::Base64(_) => {}
+            // ErrorKind::Json(_) => {}
+            // ErrorKind::Utf8(_) => {}
+            // ErrorKind::Crypto(_) => {}
+        }
+    }
+}

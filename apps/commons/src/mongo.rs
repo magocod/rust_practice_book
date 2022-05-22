@@ -6,15 +6,64 @@ use std::error::Error;
 use futures::stream::TryStreamExt;
 use mongodb::{bson::doc, options::FindOptions};
 
+use fake::faker::internet::raw::SafeEmail;
 use fake::faker::lorem::raw::Sentences;
 use fake::faker::name::raw::{FirstName, LastName};
 use fake::locales::EN;
 use fake::Fake;
 use mongodb::bson::oid::ObjectId;
 
+use crate::jwt::generate_token;
+use jsonwebtoken::errors;
+
 pub const DB_NAME: &str = "actix";
 
+pub const COLL_USERS: &str = "users";
+
 pub const COLL_BOOKS: &str = "books";
+
+pub const COLL_TOKENS: &str = "tokens";
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Token {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub token: String,
+    pub user: ObjectId,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct User {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub name: String,
+    pub email: String,
+}
+
+impl User {
+    /// generate random data
+    pub fn factory() -> Self {
+        Self {
+            id: None,
+            name: FirstName(EN).fake::<String>() + " " + LastName(EN).fake(),
+            email: SafeEmail(EN).fake(),
+        }
+    }
+}
+
+impl User {
+    /// generate tk
+    pub fn generate_token(&self) -> errors::Result<Option<Token>> {
+        match self.id {
+            None => Ok(None),
+            Some(v) => Ok(Some(Token {
+                id: None,
+                token: generate_token(self)?,
+                user: v,
+            })),
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Book {
@@ -23,7 +72,7 @@ pub struct Book {
 }
 
 impl Book {
-    /// generate random book
+    /// generate random data
     pub fn factory() -> Self {
         Self {
             title: Sentences(EN, 1..3).fake::<Vec<String>>().join(" "),

@@ -1,7 +1,7 @@
 use actix_web::{web, App, HttpServer};
 use std::sync::Mutex;
 
-use common::mongo::connect;
+use commons::mongo::connect;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

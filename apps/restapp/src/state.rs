@@ -1,5 +1,5 @@
 use actix_web::{web, Responder, Result};
-use common::mongo::connect;
+use commons::mongo::connect;
 use mongodb::Client;
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
