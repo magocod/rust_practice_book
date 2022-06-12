@@ -4,6 +4,8 @@ use derive_more::Display;
 use jsonwebtoken::errors as tk_errors;
 use jsonwebtoken::errors::ErrorKind;
 use std::convert::From;
+use serde_json::error::{Error as SerdeJsonError};
+use lapin::{Error as LapinError};
 
 use mongodb;
 
@@ -121,7 +123,9 @@ impl From<OidError> for ServiceError {
             OidError::InvalidHexStringLength { .. } => {
                 ServiceError::BadRequest("mongodb oid Error::InvalidHexStringLength".into())
             }
-            _ => ServiceError::BadRequest("mongodb generic oid Error::InvalidHexStringLength".into()),
+            _ => {
+                ServiceError::BadRequest("mongodb generic oid Error::InvalidHexStringLength".into())
+            }
         }
     }
 }
@@ -142,3 +146,29 @@ impl From<OidError> for ServiceError {
 //         }
 //     }
 // }
+
+impl From<SerdeJsonError> for ServiceError {
+    fn from(v: SerdeJsonError) -> Self {
+        // println!("{}", v);
+        ServiceError::BadRequest(v.to_string())
+    }
+}
+
+impl From<LapinError> for ServiceError {
+    fn from(v: LapinError) -> Self {
+        // println!("{}", v);
+        // match v {
+        //     Error::ChannelsLimitReached => {}
+        //     Error::InvalidProtocolVersion(_) => {}
+        //     Error::InvalidChannel(_) => {}
+        //     Error::InvalidChannelState(_) => {}
+        //     Error::InvalidConnectionState(_) => {}
+        //     Error::IOError(_) => {}
+        //     Error::ParsingError(_) => {}
+        //     Error::ProtocolError(_) => {}
+        //     Error::SerialisationError(_) => {}
+        //     _ => {}
+        // }
+        ServiceError::BadRequest(v.to_string())
+    }
+}
