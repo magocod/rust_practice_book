@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var practice_wasm_1 = require("practice_wasm");
+var d = 0.04355565;
+var a = 0.07;
+var b = 0.03;
+var mul_a = (0, practice_wasm_1.mul)(a, d);
+var mul_b = (0, practice_wasm_1.mul)(b, d);
+console.log("100", d);
+console.log("70", mul_a, a * d);
+console.log("30", mul_b, b * d);
+console.log("0.1 + 0.2 -> ", 0.1 + 0.2);
