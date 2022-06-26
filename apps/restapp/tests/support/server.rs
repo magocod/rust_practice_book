@@ -1,3 +1,5 @@
+// https://github.com/seanmonstar/reqwest/tree/master/tests
+
 #![cfg(not(target_arch = "wasm32"))]
 use std::convert::Infallible;
 use std::future::Future;
