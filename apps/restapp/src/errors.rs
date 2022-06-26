@@ -177,6 +177,7 @@ impl From<LapinError> for ServiceError {
 impl From<ReqWestError> for ServiceError {
     fn from(v: ReqWestError) -> Self {
         // println!("reqwest -> {}", v);
+        // println!("source -> {:#?}", v);
         // println!("is_connect -> {}", v.is_connect());
         // println!("is_request -> {}", v.is_request());
         // if v.is_timeout() {

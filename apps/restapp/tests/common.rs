@@ -20,6 +20,10 @@ pub fn setup() -> (Scope, u32) {
         .route(
             "reuse_http_request",
             web::get().to(github::reuse_http_request),
+        )
+        .route(
+            "provider_http_request",
+            web::get().to(github::provider_http_request),
         );
 
     (scope, 1)

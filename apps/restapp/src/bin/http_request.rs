@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?
         .text()
         .await?;
-    // println!("{:#?}", resp_str_b);
+    println!("{:#?}", resp_str_b);
 
     let vb: Vec<Branch> = serde_json::from_str(resp_str_b.as_str()).unwrap();
     println!("{:#?}", vb.first());
