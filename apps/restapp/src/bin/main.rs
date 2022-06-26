@@ -3,7 +3,7 @@ use std::sync::Mutex;
 
 use commons::mongo::connect;
 
-use restapp::{jwt_handler, mongo_crud, rabbit_handler, state};
+use restapp::{jwt_handler, mongo_crud, rabbit_handler, state, github};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -16,6 +16,7 @@ async fn main() -> std::io::Result<()> {
     });
 
     let rabbit_state = web::Data::new(state::RabbitState::new().await);
+    let http_client = web::Data::new( reqwest::Client::new());
 
     HttpServer::new(move || {
         let scope = web::scope("/books")
@@ -25,6 +26,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(app_state.clone()) // <- register the created data
             .app_data(rabbit_state.clone())
+            .app_data(http_client.clone())
             .service(scope)
             .service(restapp::hello)
             .service(restapp::hello_json)
@@ -50,6 +52,8 @@ async fn main() -> std::io::Result<()> {
                 "/send_to_queue",
                 web::post().to(rabbit_handler::send_to_queue),
             ))
+            .route("http_request", web::get().to(github::http_request))
+            .route("reuse_http_request", web::get().to(github::reuse_http_request))
     })
     .bind(("127.0.0.1", 8080))?
     .run()

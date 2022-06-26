@@ -6,6 +6,7 @@ use jsonwebtoken::errors::ErrorKind;
 use std::convert::From;
 use serde_json::error::{Error as SerdeJsonError};
 use lapin::{Error as LapinError};
+use reqwest::{Error as ReqWestError};
 
 use mongodb;
 
@@ -168,6 +169,18 @@ impl From<LapinError> for ServiceError {
         //     Error::ProtocolError(_) => {}
         //     Error::SerialisationError(_) => {}
         //     _ => {}
+        // }
+        ServiceError::BadRequest(v.to_string())
+    }
+}
+
+impl From<ReqWestError> for ServiceError {
+    fn from(v: ReqWestError) -> Self {
+        // println!("reqwest -> {}", v);
+        // println!("is_connect -> {}", v.is_connect());
+        // println!("is_request -> {}", v.is_request());
+        // if v.is_timeout() {
+        //     return ServiceError::BadRequest("timeout".to_string());
         // }
         ServiceError::BadRequest(v.to_string())
     }
