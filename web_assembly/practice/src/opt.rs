@@ -131,4 +131,25 @@ mod tests {
         println!("usd: {} to btc: {}", v, r);
         println!("btc: {} to usd: {}", v2, r2);
     }
+
+    #[test]
+    fn currency_test() {
+        let original_value = 999.99;
+        println!("original_value: {}", original_value);
+
+        let per50 = original_value * 0.50;
+        let dd = Decimal::from_f64(per50).unwrap();
+        println!(
+            "per50: {} -> toFixed 2: {:.2} -> decimal 2: {}",
+            per50,
+            per50,
+            dd.round_dp(2)
+        );
+
+        let update_value = original_value - per50;
+        let update_decimal =
+            Decimal::from_f64(original_value).unwrap() - Decimal::from_f64(per50).unwrap();
+        println!("update_value (std): {}", update_value);
+        println!("update_value (decimal): {}", update_decimal);
+    }
 }
