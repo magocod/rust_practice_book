@@ -1,7 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var practice_wasm_1 = require("practice_wasm");
-var utils_1 = require("./utils");
+// dinero v1
+// import Dinero from "dinero.js";
+// import { toPrice } from "./utils"
+// dinero v2
+var dinero_js_1 = require("dinero.js");
+var currencies_1 = require("@dinero.js/currencies");
 var d = 0.04355565;
 var a = 0.07;
 var b = 0.03;
@@ -39,12 +44,30 @@ console.log("per50", per50, "-> toFixed 2", per50.toFixed(2));
 var updateValue = originalValue - per50;
 console.log("updateValue", updateValue);
 console.log("");
-console.log("Dinero v1");
-// const price = Dinero({ amount: originalValue, currency: 'USD', precision: 2 })
-var price = (0, utils_1.toPrice)(originalValue, 2);
-console.log("originalValue", price.toFormat());
-var dinPer50 = price.percentage(50, 'DOWN');
+// console.log("Dinero v1")
+// // const price = Dinero({ amount: originalValue, currency: 'USD', precision: 2 })
+// const price = toPrice(originalValue, 2)
+// console.log("originalValue", price.toFormat())
+//
+// const dinPer50 = price.percentage(50, 'DOWN');
+// // const dinPer50 = toPrice(per50, 2)
+// console.log("per50", dinPer50.toFormat())
+//
+// const dinUpdateValue = price.subtract(dinPer50);
+// console.log("updateValue", dinUpdateValue.toFormat())
+console.log("Dinero v2");
+var transformer = function (_a) {
+    var amount = _a.amount, currency = _a.currency;
+    return "".concat(currency.code, " ").concat(amount);
+};
+var price = (0, dinero_js_1.dinero)({ amount: originalValue * Math.pow(10, 2), currency: currencies_1.USD });
+// const price = toPrice(originalValue, 2)
+// console.log("originalValue", price.toJSON())
+console.log("originalValue", (0, dinero_js_1.toFormat)(price, transformer));
+var _a = (0, dinero_js_1.allocate)(price, [50, 50]), dinPer50 = _a[0], dinPerB = _a[1];
 // const dinPer50 = toPrice(per50, 2)
-console.log("per50", dinPer50.toFormat());
-var dinUpdateValue = price.subtract(dinPer50);
-console.log("updateValue", dinUpdateValue.toFormat());
+// console.log("per50", dinPer50.toJSON(), dinPerB.toJSON())
+console.log("per50", (0, dinero_js_1.toFormat)(dinPer50, transformer), "<- ->", (0, dinero_js_1.toFormat)(dinPerB, transformer));
+var dinUpdateValue = (0, dinero_js_1.subtract)(price, dinPer50);
+// console.log("updateValue", dinUpdateValue.toJSON())
+console.log("updateValue", (0, dinero_js_1.toFormat)(dinUpdateValue, transformer));
