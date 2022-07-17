@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "dinero.js": "^1.9.1",
     "practice_wasm": "../pkg"
   },
   "author": "",
