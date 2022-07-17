@@ -7,6 +7,7 @@ var practice_wasm_1 = require("practice_wasm");
 // dinero v2
 var dinero_js_1 = require("dinero.js");
 var currencies_1 = require("@dinero.js/currencies");
+// import { dineroFromFloatV2 } from "./utils"
 var d = 0.04355565;
 var a = 0.07;
 var b = 0.03;
@@ -71,3 +72,17 @@ console.log("per50", (0, dinero_js_1.toFormat)(dinPer50, transformer), "<- ->", 
 var dinUpdateValue = (0, dinero_js_1.subtract)(price, dinPer50);
 // console.log("updateValue", dinUpdateValue.toJSON())
 console.log("updateValue", (0, dinero_js_1.toFormat)(dinUpdateValue, transformer));
+// const BTC: Currency<number> = {
+//     code: 'BTC',
+//     base: 10,
+//     exponent: 8,
+// };
+//
+// console.log("")
+//
+// const dineroBigint = createDinero({ calculator });
+//
+// const bigPrice = dineroBigint({ amount: 1000000000000000n, currency: BTC })
+// // const price = toPrice(originalValue, 2)
+// // console.log("originalValue", price.toJSON())
+// console.log("originalValue", toFormat(price, transformer))
